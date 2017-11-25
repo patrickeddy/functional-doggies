@@ -1,5 +1,6 @@
 // Elements
-let dogButton,
+let breedInput,
+    dogButton,
     dogButton2,
     autoFetchButton,
     autoFetchTools,
@@ -10,7 +11,8 @@ let dogButton,
 
 // Utils
 const el = (id) => window.document.getElementById(id)
-const API_URL = 'https://dog.ceo/api/breeds/image/'
+const RANDOM_API_URL = 'https://dog.ceo/api/breeds/image/random'
+const getApiUrlForBreed = breed => `https://dog.ceo/api/breed/${breed}/images/random`
 // Generic compose function (Who needs lodash, am I right?)
 const compose = (...fns) => fns.reduceRight((g, f) => (...args) => f(g(...args)))
 const trace = (message) => f => {
@@ -18,7 +20,13 @@ const trace = (message) => f => {
   return f
 }
 // Fetch the dog data
-const fetchDogImage = (breed = 'random') => fetch(API_URL + breed)
+const fetchDogImage = (breed) => {
+  if (breed === null || breed === 'random')
+    return fetch(RANDOM_API_URL)
+  else {
+    return fetch(getApiUrlForBreed(breed))
+  }
+}
 
 // State
 const _state = {
@@ -121,10 +129,14 @@ const appendDogHtmlXf = id => el => el.innerHTML = `${ el.innerHTML + d(state.do
 
 // add the dog to state
 const makeAddDog = addXf => dogUrl => {
-  const newId = state.dogs.all.length
-  const newDog = { id: newId, url: dogUrl, xf: addXf(newId) }
-  state.dogs.all.push( newDog )
-  state.dogs.size += 1
+  if (dogUrl !== 'Breed not found'){
+    const newId = state.dogs.all.length
+    const newDog = { id: newId, url: dogUrl, xf: addXf(newId) }
+    state.dogs.all.push( newDog )
+    state.dogs.size += 1
+  } else if (!state.autoFetch.on) {
+    alert("Try something like 'retriever/golden'.")
+  }
 }
 
 // ready-for-use partials
@@ -133,18 +145,20 @@ const appendDog = makeAddDog(appendDogHtmlXf)
 
 // fetch dog
 const fetchDogUrl = (xfCallback) => {
-  fetchDogImage()
+  fetchDogImage(breedInput.value)
     .then(response => response.json())
     .then(dog => dog.message)
     .then(xfCallback)
 }
-const composeFetch = (xfPartial) => fetchDogUrl.bind(null, xfPartial)
+const composeFetch = (xfCallback) => fetchDogUrl.bind(null, xfCallback)
 
 // Run app
 function run() {
   const body = `
   <div>
     <div class="buttons">
+      <a href="https://dog.ceo/dog-api/#breeds-list">(breed list)</a>
+      <input id="input-breed" type="text" placeholder="Enter breed here" value="random" />
       <button id="button-new-dog">Get new dog</button>
       <button id="button-new-dog-2">Append new dog</button>
       <button id="button-auto-fetch"></button>
@@ -161,6 +175,7 @@ function run() {
   document.body.innerHTML = body
 
   // Elements from body
+  breedInput = el('input-breed')
   dogButton = el('button-new-dog')
   dogButton2 = el('button-new-dog-2')
   autoFetchButton = el('button-auto-fetch')
@@ -171,9 +186,9 @@ function run() {
   dogsDiv = el('dogs')
 
   // event listeners
-  const prependHandler = composeFetch(prependDog)
-  const appendHandler = composeFetch(appendDog)
-  const toggleHandler = composeFetch(prependDog)
+  const prependHandler = composeFetch(prependDog, breedInput.value)
+  const appendHandler = composeFetch(appendDog, breedInput.value)
+  const toggleHandler = composeFetch(prependDog, breedInput.value)
   const clearHandler = Dogs.clear
 
   dogButton.onclick = prependHandler
@@ -183,7 +198,7 @@ function run() {
   clearButton.onclick = clearHandler
 
   // default call
-  fetchDogUrl(prependDog)
+  fetchDogUrl(prependDog, 'random')
 }
 
 window.onload = run
