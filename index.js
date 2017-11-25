@@ -35,7 +35,7 @@ Object.keys(_state).map(key => state[key] = new Proxy(_state[key], stateValidato
 
 
 const makeStateBroadcaster = (...fns) => () => fns.map(fn => fn())
-// stateChanged is a onchange broadcaster to State Change Handlers (SH)
+// stateChanged is a onchange broadcaster to State Change Handlers (SCH)
 const stateChanged = makeStateBroadcaster(
   SCHAutoFetch
 )
