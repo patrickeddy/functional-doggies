@@ -1,0 +1,22 @@
+body {
+  font-size: 14px
+}
+
+.buttons {
+  text-align: center;
+}
+
+#auto-fetch-tools > p{
+  display: none;
+}
+
+#auto-fetch-tools.on > p {
+  display: block;
+}
+.dog img {
+  width: 500px;
+}
+button {
+  width: 150px;
+  font-size: 14px;
+}
