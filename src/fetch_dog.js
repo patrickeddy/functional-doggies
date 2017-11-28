@@ -11,6 +11,10 @@ const d = dog => `
 // dog html xfs
 const prependDogHtmlXf = id => el => el.innerHTML = `${ d(state.dogs.all[id]) + el.innerHTML }`
 const appendDogHtmlXf = id => el => el.innerHTML = `${ el.innerHTML + d(state.dogs.all[id]) }`
+const spinDogHtmlXf = id => el => {
+  const spinClass = d(state.dogs.all[id]).replace('class="dog"', 'class="dog spin"')
+  el.innerHTML = `${ spinClass + el.innerHTML }`
+}
 
 // add the dog to state
 const makeAddDog = addXf => dogUrl => {
@@ -21,10 +25,6 @@ const makeAddDog = addXf => dogUrl => {
     state.dogs.size += 1
   }
 }
-
-// ready-for-use partials
-const prependDog = makeAddDog(prependDogHtmlXf)
-const appendDog = makeAddDog(appendDogHtmlXf)
 
 // Fetch dog
 const fetchDogAPIUrl = (breed) => {
@@ -43,5 +43,10 @@ const fetchDogForUrl = (xfCallback, breed) => {
 }
 const fetchDog = xfCallback => breed => fetchDogForUrl(xfCallback, breed)
 
+// ready-for-use partials
+const prependDog = makeAddDog(prependDogHtmlXf)
+const appendDog = makeAddDog(appendDogHtmlXf)
+const spinDog = makeAddDog(spinDogHtmlXf)
+
 export { fetchDog,
-          /* body xfs ->*/ prependDog, appendDog}
+          /* body xfs ->*/ prependDog, appendDog, spinDog}

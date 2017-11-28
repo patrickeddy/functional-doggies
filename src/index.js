@@ -6,7 +6,8 @@ import {
 import {
   fetchDog,
   prependDog,
-  appendDog
+  appendDog,
+  spinDog
 } from './fetch_dog'
 
 import {
@@ -73,7 +74,7 @@ function run() {
       <a href="https://dog.ceo/dog-api/#breeds-list">(breed list)</a>
       <input id="input-breed" type="text" placeholder="Enter breed here" value="random" />
       <button id="button-new-dog">Get new dog</button>
-      <button id="button-new-dog-2">Append new dog</button>
+      <button id="button-new-dog-2">Spin new dog</button>
       <button id="button-auto-fetch"></button>
       <button id="button-clear">Clear</button>
       <div id="auto-fetch-tools">
@@ -100,12 +101,12 @@ function run() {
 
   // event listeners
   const prependHandler = fetchDog(prependDog)
-  const appendHandler = fetchDog(appendDog)
+  const spinHandler = fetchDog(spinDog)
   const toggleHandler = fetchDog(prependDog)
   const clearHandler = Dogs.clear.bind(null, dogsDiv)
 
   dogButton.onclick = () => prependHandler(breedInput.value)
-  dogButton2.onclick = () => appendHandler(breedInput.value)
+  dogButton2.onclick = () => spinHandler(breedInput.value)
   autoFetchButton.onclick = () => AutoFetch.toggle(() => toggleHandler(breedInput.value))
   autoFetchIntervalInput.onchange = stateChanged
   clearButton.onclick = clearHandler
