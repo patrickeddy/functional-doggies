@@ -1,20 +1,17 @@
 import {
   el,
+  cl,
   trace,
   compose
 } from './utils'
 import {
   fetchDog,
+  clearDogs,
   prependDog,
-  appendDog,
-  spinDog
-} from './fetch_dog'
-
-import {
-  AutoFetch,
-  Dogs
-} from './helpers'
-
+  spinDog,
+  dogClickHandler
+} from './dog'
+import { AutoFetch } from './autofetch'
 import {
   state,
   makeStateBroadcaster
@@ -32,25 +29,27 @@ let breedInput,
     dogsDiv
     = null
 
-// stateChanged is a onchange broadcaster to State Change Handlers (SCH)
-const stateChanged = makeStateBroadcaster(
+// Configure a State Broadcaster that will execute State Change Handlers (SCH)
+makeStateBroadcaster(
+  trace('! State Changed'),
   SCHDogs,
-  SCHAutoFetch,
-  trace('~~ App State Changed ~~')
+  SCHAutoFetch
 )
 
 // StateChangeHandler - Dogs
-function SCHDogs() {
+function SCHDogs(obj, props, value) {
   if (state.dogs.oldSize < state.dogs.size){
     // Add the missing dogs to the document
     const dogDif = state.dogs.all.slice(state.dogs.oldSize)
-    dogDif.map(d => d.xf(dogsDiv))
+    dogDif.map(d => {
+      d.xf(dogsDiv)
+    })
     state.dogs.oldSize = state.dogs.size
   }
 }
 
 // StateChangeHandler - AutoFetch
-function SCHAutoFetch() {
+function SCHAutoFetch(obj, props, value) {
   if (state.autoFetch.on){
     autoFetchTools.classList.add("on")
     autoFetchButton.innerHTML = 'Auto fetch = on'
@@ -58,11 +57,7 @@ function SCHAutoFetch() {
     autoFetchTools.classList.remove("on")
     autoFetchButton.innerHTML = 'Auto fetch = off'
   }
-  const newFreq = parseInt(autoFetchIntervalInput.value)
-  if (state.autoFetch.freq !== newFreq){
-    state.autoFetch.freq = newFreq
-  }
-  autoFetchText.innerHTML = `<h2>Every ${ Math.floor(((newFreq/1000) * 100))/100 } seconds!</h2>`
+  autoFetchText.innerHTML = `<h2>Every ${ Math.floor(((state.autoFetch.freq/1000) * 100))/100 } seconds!</h2>`
 }
 
 
@@ -79,7 +74,7 @@ function run() {
       <button id="button-clear">Clear</button>
       <div id="auto-fetch-tools">
         <p id="text-auto-fetch"></p>
-        <p><input id="range-auto-fetch-interval" type="range" min="500" max="3000" /></p>
+        <p><input id="range-auto-fetch-interval" type="range" min="500" max="3000" value="1500"/></p>
       </div>
     </div>
     <div id="dogs" style="text-align:center"></div>
@@ -103,13 +98,21 @@ function run() {
   const prependHandler = fetchDog(prependDog)
   const spinHandler = fetchDog(spinDog)
   const toggleHandler = fetchDog(prependDog)
-  const clearHandler = Dogs.clear.bind(null, dogsDiv)
+  const clearHandler = clearDogs.bind(null, dogsDiv)
+  const intervalHandler = () => {
+    const newFreq = parseInt(autoFetchIntervalInput.value)
+    if (state.autoFetch.freq !== newFreq){
+      state.autoFetch.freq = newFreq
+    }
+  }
 
+  breedInput.addEventListener('keyup', (e) => { if(e.keyCode === 13) prependHandler(breedInput.value) })
   dogButton.onclick = () => prependHandler(breedInput.value)
   dogButton2.onclick = () => spinHandler(breedInput.value)
   autoFetchButton.onclick = () => AutoFetch.toggle(() => toggleHandler(breedInput.value))
-  autoFetchIntervalInput.onchange = stateChanged
+  autoFetchIntervalInput.onchange = intervalHandler
   clearButton.onclick = clearHandler
+  dogsDiv.onclick = dogClickHandler
 
   // default call
   fetchDog(prependDog)(breedInput.value)
