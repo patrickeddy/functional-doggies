@@ -26,7 +26,7 @@ const spinDogHtmlXf = id => el => {
 const makeAddDog = addXf => dogUrl => {
   if (dogUrl !== 'Breed not found'){
     const newId = state.dogs.all.length
-    const newDog = { id: newId, url: dogUrl, clickHandler: dogClickHandler, xf: addXf(newId) }
+    const newDog = { id: newId, url: dogUrl, clickHandler: dogClickHandler, render: addXf(newId) }
     state.dogs.all.push( newDog )
     state.dogs.size += 1
   }
@@ -52,10 +52,19 @@ const fetchDogForUrl = (xfCallback, breed) => {
 //     Exports
 ///////////////////////
 
-// fetchDog(p:partial, breed:string)(el: Element object)
-const fetchDog = xfCallback => breed => fetchDogForUrl(xfCallback, breed)
+// fetchDog(p: addXfPartial)(breed: string)
+const fetchDog = addXfPartial => breed => fetchDogForUrl(addXfPartial, breed)
+// AddXfPartials
+// - These functions are set to the `render` property on the dog object in state.dogs
+// - Use `makeStateBroadcaster` to check for updates
+//     and then render the dogs into an Element using their `render` property function:
+//     => state.dogs.map( dog => dog.render(el: Element object) )
+const prependDog = makeAddDog(prependDogHtmlXf) // Prepends the dog normally to the el
+const appendDog = makeAddDog(appendDogHtmlXf) // Appends the dog normally to the el
+const spinDog = makeAddDog(spinDogHtmlXf) // Prepends the dog spinning to the el
 
-// Clears the dogs from the element
+
+// clearDogs(el: Element object)
 const clearDogs = (el) => {
   el.innerHTML = ""
   state.dogs.all.length = 0
@@ -63,22 +72,17 @@ const clearDogs = (el) => {
   state.dogs.oldSize = 0
 }
 
-// Dog clicked
+// dogClickHandler(e: Event object)
 const dogClickHandler = (e) => {
   if (e.target.classList.contains('spin')) {
     e.target.classList.remove('spin') // remove spin if clicked
   }
 }
 
-// Ready-to-use partials
-const prependDog = makeAddDog(prependDogHtmlXf)
-const appendDog = makeAddDog(appendDogHtmlXf)
-const spinDog = makeAddDog(spinDogHtmlXf)
-
 export {
   fetchDog,
-  clearDogs,
-  dogClickHandler,
   /* element xfs ->*/
-  prependDog, appendDog, spinDog
+  prependDog, appendDog, spinDog,
+  clearDogs,
+  dogClickHandler
 }

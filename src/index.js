@@ -1,21 +1,7 @@
-import {
-  el,
-  cl,
-  trace,
-  compose
-} from './utils'
-import {
-  fetchDog,
-  clearDogs,
-  prependDog,
-  spinDog,
-  dogClickHandler
-} from './dog'
+import { el, cl, trace, compose } from './utils'
+import { fetchDog, clearDogs, prependDog, spinDog, dogClickHandler } from './dog'
 import { AutoFetch } from './autofetch'
-import {
-  state,
-  makeStateBroadcaster
-} from './state'
+import { configureInitialState, state, makeStateBroadcaster } from './state'
 
 // Elements
 let breedInput,
@@ -29,25 +15,35 @@ let breedInput,
     dogsDiv
     = null
 
+// Setup the intial state
+configureInitialState({
+  autoFetch: {
+    on: false,
+    freq: 1000
+  },
+  dogs: {
+    oldSize: 0,
+    size: 0,
+    all: []
+  }
+})
+
 // Configure a State Broadcaster that will execute State Change Handlers (SCH)
 makeStateBroadcaster(
   trace('! State Changed'),
   SCHDogs,
   SCHAutoFetch
 )
-
 // StateChangeHandler - Dogs
 function SCHDogs(obj, props, value) {
   if (state.dogs.oldSize < state.dogs.size){
-    // Add the missing dogs to the document
-    const dogDif = state.dogs.all.slice(state.dogs.oldSize)
-    dogDif.map(d => {
-      d.xf(dogsDiv)
-    })
+    const dogDif = state.dogs.all.slice(state.dogs.oldSize) // get the missing dogs
+    dogDif.map(d => d.render(dogsDiv)) // render dogs into `dogsDiv`
     state.dogs.oldSize = state.dogs.size
+    // ^ necessary because only the keys for the state object are checked for updates
+    //   (state.dogs.all is an array under the subobject `state.dogs`)
   }
 }
-
 // StateChangeHandler - AutoFetch
 function SCHAutoFetch(obj, props, value) {
   if (state.autoFetch.on){
@@ -74,7 +70,7 @@ function run() {
       <button id="button-clear">Clear</button>
       <div id="auto-fetch-tools">
         <p id="text-auto-fetch"></p>
-        <p><input id="range-auto-fetch-interval" type="range" min="500" max="3000" value="1500"/></p>
+        <p><input id="range-auto-fetch-interval" type="range" min="500" max="3000"/></p>
       </div>
     </div>
     <div id="dogs" style="text-align:center"></div>
@@ -105,7 +101,6 @@ function run() {
       state.autoFetch.freq = newFreq
     }
   }
-
   breedInput.addEventListener('keyup', (e) => { if(e.keyCode === 13) prependHandler(breedInput.value) })
   dogButton.onclick = () => prependHandler(breedInput.value)
   dogButton2.onclick = () => spinHandler(breedInput.value)
