@@ -65,128 +65,61 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-const API_URL = 'https://dog.ceo/api/breeds/image/'
+"use strict";
 
-const body = `<div>
-                <div>
-                  <button id="button-new-dog" style="font-size: 16px;">Get new dog</button>
-                  <button id="button-new-dog-2" style="font-size: 16px;">Append new dog</button>
-                  <button id="button-auto-fetch" style="font-size: 16px;">Toggle auto fetch</button>
-                  <span id="text-auto-fetching" style="display:none;"></span>
-                  <input id="range-auto-fetch-interval" style="display:none;" type="range" min="500" max="3000" />
-                </div>
-                <div id="dogs" style="text-align:center"></div>
-              </div>`
+
+var _utils = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"utils\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+
+var _fetch_dog = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"fetch_dog\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 
 // Elements
-let dogButton,
-    dogButton2,
-    autoFetchButton,
-    autoFetchingText,
-    autoFetchIntervalInput,
-    divDogs
-    = null
+var breedInput = void 0,
+    dogButton = void 0,
+    dogButton2 = void 0,
+    autoFetchButton = void 0,
+    autoFetchTools = void 0,
+    autoFetchText = void 0,
+    autoFetchIntervalInput = void 0,
+    divDogs = null;
 
-const _state = {
-  autoFetch: {
-    on: false,
-    freq: 1000,
-    start (/* fetch function */f) {
-      this.on = true
-      this.loop(f)
-    },
-    loop (f) {
-      f()
-      if (this.on) {
-        setTimeout(this.loop.bind(this, f), this.freq)
-      }
-    },
-    stop () {
-      this.on = false
-    }
-  },
-}
-// Should never manipulate state directly
-// Call through this proxy
-const state = new Proxy(state, () => {
-  set: (obj, prop) => {
-    stateChanged()
-    return
-  }
-})
-
-function stateChanged(){
-  // Auto fetching
-  stateChangedAutoFetch()
-
-  //...
-}
-
-function stateChangedAutoFetch(){
-  if (state.autoFetch.on){
-    autoFetchingText.style.cssText = 'display: inline-block;'
-    autoFetchIntervalInput.style.cssText = 'display: inline-block;'
-  } else {
-    autoFetchingText.style.cssText = 'display: none;'
-    autoFetchIntervalInput.style.cssText = 'display: none;'
-  }
-  const newFreq = parseInt(autoFetchIntervalInput.value)
-  state.autoFetch.freq = newFreq
-  autoFetchingText.innerHTML = `Auto fetching (${newFreq/1000}s)`
-}
-
+// Run app
 function run() {
+  var body = '\n  <div>\n    <div class="buttons">\n      <a href="https://dog.ceo/dog-api/#breeds-list">(breed list)</a>\n      <input id="input-breed" type="text" placeholder="Enter breed here" value="random" />\n      <button id="button-new-dog">Get new dog</button>\n      <button id="button-new-dog-2">Append new dog</button>\n      <button id="button-auto-fetch"></button>\n      <button id="button-clear">Clear</button>\n      <div id="auto-fetch-tools">\n        <p id="text-auto-fetch"></p>\n        <p><input id="range-auto-fetch-interval" type="range" min="500" max="3000" /></p>\n      </div>\n    </div>\n    <div id="dogs" style="text-align:center"></div>\n  </div>\n  ';
   // Append the body to the actual body
-  document.body.innerHTML = body
-  // Elements
-  dogButton = window.document.getElementById('button-new-dog')
-  dogButton2 = window.document.getElementById('button-new-dog-2')
-  autoFetchButton = window.document.getElementById('button-auto-fetch')
-  autoFetchIntervalInput = window.document.getElementById('range-auto-fetch-interval')
-  autoFetchingText = window.document.getElementById('text-auto-fetching')
-  divDogs = window.document.getElementById('dogs')
-  // ----
+  document.body.innerHTML = body;
 
-  // Fetch the dog data
-  const fetchDogImage = (breed = 'random') => fetch(API_URL + breed)
-
-  // xfs
-  const imgHtml = url => "<img width='350' src='" + url + "' />"
-  const prependDog = (el, url) => el.innerHTML = `<div>${imgHtml(url) + el.innerHTML}</div>`
-  const appendDog = (el, url) => el.innerHTML = `<div>${el.innerHTML + imgHtml(url)}</div>`
-
-  // compose
-  const addDogImg = (el, addXf) => url => addXf(el, url)
-
-  // partial functions
-  const prependAddDog = addDogImg(divDogs, prependDog)
-  const appendAddDog = addDogImg(divDogs, appendDog)
-
-  // do fetch
-  const fetchAndSetDog = (/* default to prepend */addXf = prependDog) =>
-    fetchDogImage()
-      .then(response => response.json())
-      .then(dog => dog.message)
-      .then(addXf)
+  // Elements from body
+  breedInput = (0, _utils.el)('input-breed');
+  dogButton = (0, _utils.el)('button-new-dog');
+  dogButton2 = (0, _utils.el)('button-new-dog-2');
+  autoFetchButton = (0, _utils.el)('button-auto-fetch');
+  autoFetchTools = (0, _utils.el)('auto-fetch-tools');
+  autoFetchText = (0, _utils.el)('text-auto-fetch');
+  autoFetchIntervalInput = (0, _utils.el)('range-auto-fetch-interval');
+  clearButton = (0, _utils.el)('button-clear');
+  dogsDiv = (0, _utils.el)('dogs');
 
   // event listeners
-  dogButton.onclick = fetchAndSetDog.bind(null, prependAddDog)
-  dogButton2.onclick = fetchAndSetDog.bind(null, appendAddDog)
-  autoFetchButton.onclick = () => {
-    if (state.autoFetch.on) {
-      state.autoFetch.stop()
-    } else {
-      state.autoFetch.start(fetchAndSetDog.bind(null, prependAddDog))
-    }
-  }
-  autoFetchIntervalInput.onchange = stateChanged
-  fetchAndSetDog(prependAddDog)
+  var prependHandler = composeFetch(_fetch_dog.prependDog, breedInput.value);
+  var appendHandler = composeFetch(_fetch_dog.appendDog, breedInput.value);
+  var toggleHandler = composeFetch(_fetch_dog.prependDog, breedInput.value);
+  var clearHandler = Dogs.clear;
+
+  dogButton.onclick = prependHandler;
+  dogButton2.onclick = appendHandler;
+  autoFetchButton.onclick = function () {
+    return AutoFetch.toggle(toggleHandler);
+  };
+  autoFetchIntervalInput.onchange = stateChanged;
+  clearButton.onclick = clearHandler;
+
+  // default call
+  fetchDogUrl(_fetch_dog.prependDog, 'random');
 }
 
-window.onload = run
-
+window.onload = run;
 
 /***/ })
 /******/ ]);
