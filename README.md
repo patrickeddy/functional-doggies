@@ -8,6 +8,8 @@ I made this project because I wanted to practice some functional programming in 
 
 Thanks dog.ceo for the coo' images.
 
+You can view the website [here](https://patrickeddy.github.io/functional-doggies/).
+
 ## Run
 
 ```

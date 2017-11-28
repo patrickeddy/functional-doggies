@@ -7,7 +7,7 @@
     "start": "webpack-dev-server --open",
     "watch": "webpack --progress --watch --color --display-error-details",
     "build": "webpack",
-    "publish": "git stash && git checkout -b gh-pages && npm run build && git push origin gh-pages && git checkout master && git stash pop && git branch -D gh-pages",
+    "publish": "git stash && git checkout -b gh-pages && npm run build && git push origin gh-pages && git checkout master && git branch -D gh-pages && git stash pop",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "p@patrickeddy.com",
